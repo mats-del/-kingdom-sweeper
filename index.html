@@ -2,86 +2,805 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Keepsweeper Kingdom</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#20262d">
+<title>Kingdom Sweeper – Vollversion</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#20242a;font-family:Arial,sans-serif}
-body{touch-action:none}
-#game{position:fixed;inset:0;overflow:hidden;background:#6f9f54}
-#world{position:absolute;left:0;top:0;transform-origin:0 0}
-#map{position:absolute;left:0;top:0}
-.tile{position:absolute;width:48px;height:48px;border:1px solid rgba(30,40,30,.16)}
-.hidden{background:linear-gradient(145deg,#d7d9d8 0%,#b8baba 48%,#96999a 100%);box-shadow:inset 2px 2px #f1f2f1,inset -2px -2px #7f8384}
-.grass{background:#78a957}.grass2{background:#83b460}
-.water{background:#4e91b2}.water:after{content:"";position:absolute;left:6px;right:6px;top:19px;height:3px;background:#79b8cf;box-shadow:10px 7px #79b8cf}
-.forest{background:#5e914f}.forest:after{content:"";position:absolute;left:12px;top:7px;width:25px;height:31px;background:#2f6740;clip-path:polygon(50% 0,100% 38%,77% 38%,100% 65%,72% 65%,88% 100%,12% 100%,28% 65%,0 65%,23% 38%,0 38%)}
-.mountain{background:#88887a}.mountain:after{content:"";position:absolute;left:5px;bottom:5px;border-left:19px solid transparent;border-right:19px solid transparent;border-bottom:35px solid #666960}
-.number{font-weight:900;color:#274c9b;font-size:22px;text-align:center;line-height:48px;text-shadow:1px 1px #fff}
-.resource:before{position:absolute;left:13px;top:8px;font-size:25px}.wood:before{content:"ð²"}.gold:before{content:"ðª"}.stone:before{content:"ðª¨"}.food:before{content:"ð¾"}
-#buildings,#units,#fx{position:absolute;left:0;top:0}
-.castle{position:absolute;width:120px;height:120px;transform:translate(-50%,-70%);filter:drop-shadow(3px 5px 2px #0006)}
-.castle .tower{position:absolute;bottom:17px;width:34px;height:66px;background:#c9c0a5;border:4px solid #666055}.castle .l{left:10px}.castle .r{right:10px}
-.castle .roof{position:absolute;top:0;width:44px;height:34px;background:#8b493c;clip-path:polygon(50% 0,100% 100%,0 100%)}.castle .rl{left:5px}.castle .rr{right:5px}
-.castle .keep{position:absolute;left:36px;bottom:17px;width:48px;height:76px;background:#d4c8a9;border:4px solid #666055}.castle .gate{position:absolute;left:52px;bottom:17px;width:16px;height:28px;background:#4f4036;border-radius:10px 10px 0 0}
-.building{position:absolute;width:78px;height:78px;transform:translate(-50%,-65%);filter:drop-shadow(2px 4px 2px #0005)}
-.building .roof{position:absolute;left:9px;top:9px;width:60px;height:34px;background:#a64b39;clip-path:polygon(50% 0,100% 60%,88% 60%,50% 28%,12% 60%,0 60%)}.building .body{position:absolute;left:18px;top:33px;width:42px;height:32px;background:#d5bb87;border:3px solid #66503c}.building .door{position:absolute;left:32px;top:47px;width:12px;height:18px;background:#574137}
-.farm .roof{background:#d18e35}.sawmill .roof{background:#795b43}.quarry .roof{background:#686d70}.storage .roof{background:#565c82}.barracks .roof{background:#9b3e38}
-.unit{position:absolute;width:28px;height:36px;transform:translate(-50%,-70%);z-index:10}.unit:before{content:"";position:absolute;left:7px;top:0;width:14px;height:14px;background:#e5b07a;border:2px solid #694737;border-radius:50%}.unit:after{content:"";position:absolute;left:4px;top:13px;width:20px;height:18px;background:#4b6f91;border-radius:5px;box-shadow:4px 16px 0 -5px #4b3a32,-4px 16px 0 -5px #4b3a32}
-#top{position:fixed;z-index:50;top:0;left:0;right:0;height:48px;background:#252a31;border-bottom:3px solid #111;display:flex;align-items:center;gap:5px;padding:4px 6px;box-shadow:0 2px 8px #0008}
-.stat{height:36px;min-width:65px;padding:4px 8px;border:2px solid #4e5660;background:#343b43;color:#fff;border-radius:4px;font-size:12px;font-weight:700}.stat b{font-size:16px}.mode{margin-left:auto;color:#ffe58d;text-align:right}
-#goal{position:fixed;z-index:50;top:53px;left:50%;transform:translateX(-50%);background:#eee;border:3px solid #555;padding:5px 12px;border-radius:3px;color:#222;font-weight:800;box-shadow:0 2px 6px #0006}
-#bottom{position:fixed;z-index:60;left:0;right:0;bottom:0;background:#282d33;border-top:3px solid #111;padding:6px;display:flex;gap:6px;overflow-x:auto}
-.btn{flex:0 0 auto;background:#444c55;color:#fff;border:2px solid #707982;border-radius:4px;padding:8px 11px;font-weight:800}.btn:active{background:#65717a}
-#help{position:fixed;z-index:100;inset:8% 5%;background:#d6d6d6;border:5px solid #555;box-shadow:0 10px 30px #0009;display:none;color:#202020;overflow:auto;padding:12px}.helpTitle{background:#234b9a;color:#fff;font-weight:900;padding:7px;margin:-12px -12px 12px}.close{position:absolute;right:10px;top:9px;background:#ddd;border:1px solid #555}
-#hint{position:fixed;z-index:80;left:50%;bottom:70px;transform:translateX(-50%);background:#242a31;color:#fff;border:2px solid #d0a84e;padding:7px 12px;border-radius:4px;opacity:0;transition:.2s;pointer-events:none}
-#hint.show{opacity:1}.floating{position:absolute;color:#fff;font-weight:900;text-shadow:1px 1px #000;font-size:18px;animation:up 1.2s ease-out forwards}@keyframes up{to{transform:translateY(-35px);opacity:0}}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#171b20;font-family:Arial,Helvetica,sans-serif}
+body{touch-action:none;color:#f4f4f4}
+button{font:inherit}
+#game{position:fixed;inset:0;overflow:hidden;background:#75a55a}
+#world{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+#map,#buildings,#units,#effects,#paths{position:absolute;left:0;top:0}
+#map{image-rendering:pixelated}
+.tile{position:absolute;width:40px;height:40px;border:1px solid rgba(25,35,25,.18);user-select:none}
+.hidden{background:linear-gradient(145deg,#dfe1df 0%,#b9bcbb 47%,#929696 100%);box-shadow:inset 2px 2px #f7f7f7,inset -2px -2px #777b7b}
+.hidden:after{content:"";position:absolute;left:5px;right:5px;bottom:4px;height:3px;background:#8b8e8d;opacity:.45}
+.grass{background:#78a956}
+.grass2{background:#83b461}
+.forest{background:#5e914f}
+.forest:before,.forest:after{content:"";position:absolute;background:#2d6840;clip-path:polygon(50% 0,100% 35%,78% 35%,100% 64%,72% 64%,88% 100%,12% 100%,28% 64%,0 64%,22% 35%,0 35%)}
+.forest:before{left:4px;top:7px;width:18px;height:27px}
+.forest:after{right:3px;top:5px;width:20px;height:30px;background:#3a7544}
+.water{background:#4c91b3}
+.water:after{content:"";position:absolute;left:4px;right:4px;top:10px;height:3px;background:#78bbd0;box-shadow:9px 12px #78bbd0,18px 24px #78bbd0;opacity:.85}
+.mountain{background:#85877b}
+.mountain:after{content:"";position:absolute;left:3px;bottom:3px;border-left:17px solid transparent;border-right:17px solid transparent;border-bottom:32px solid #65685f}
+.mountain:before{content:"";position:absolute;left:13px;bottom:17px;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:12px solid #d5d6cf;z-index:2}
+.gold{background:#b5a35a}
+.gold:after{content:"G";position:absolute;left:11px;top:7px;font-size:22px;font-weight:900;color:#5f4a12}
+.stone{background:#858a8c}
+.stone:after{content:"S";position:absolute;left:11px;top:7px;font-size:22px;font-weight:900;color:#384044}
+.food{background:#82aa55}
+.food:after{content:"F";position:absolute;left:13px;top:7px;font-size:22px;font-weight:900;color:#355a2c}
+.ruin{background:#9a927d}
+.ruin:after{content:"";position:absolute;left:7px;bottom:7px;width:26px;height:23px;border:4px solid #59544b;border-top-width:8px}
+.cave{background:#6d756d}
+.cave:after{content:"";position:absolute;left:8px;bottom:5px;width:24px;height:26px;background:#2d3030;border-radius:50% 50% 4px 4px}
+.treasure{background:#9a8750}
+.treasure:after{content:"";position:absolute;left:8px;top:12px;width:24px;height:16px;background:#d6b64c;border:3px solid #5c4720}
+.crypt{background:#716a78}
+.crypt:after{content:"";position:absolute;left:10px;top:5px;width:20px;height:30px;background:#3b3243;border:3px solid #b09bc5;border-radius:12px 12px 3px 3px}
+.dragonCave{background:#6d4850}
+.dragonCave:after{content:"D";position:absolute;left:9px;top:4px;color:#ef8b65;font-size:25px;font-weight:900}
+.portal{background:#7656a1;animation:pulse 1s infinite alternate}
+.portal:after{content:"";position:absolute;left:6px;top:6px;width:28px;height:28px;border:4px solid #d0a8ff;border-radius:50%;box-shadow:0 0 8px #d0a8ff}
+@keyframes pulse{to{filter:brightness(1.25)}}
+.number{position:absolute;inset:0;text-align:center;line-height:40px;font-size:20px;font-weight:900;color:#234e9b;text-shadow:1px 1px #fff}
+.n2{color:#26762e}.n3{color:#b33b2f}.n4{color:#6b2c86}.n5{color:#5b2b20}
+.borderTile{box-shadow:inset 0 0 0 2px #5bb7df}
+.selected{outline:3px solid #ffe16b;outline-offset:-3px;z-index:30}
+#buildings>*{position:absolute;transform:translate(-50%,-75%);z-index:12;pointer-events:none}
+.castle{width:92px;height:86px}
+.castle .keep{position:absolute;left:27px;bottom:6px;width:38px;height:56px;background:#d3c6a4;border:4px solid #625b4e}
+.castle .tower{position:absolute;bottom:6px;width:25px;height:58px;background:#c7bea5;border:4px solid #625b4e}
+.castle .l{left:5px}.castle .r{right:5px}
+.castle .roof{position:absolute;top:0;width:34px;height:27px;background:#87483d;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.castle .rl{left:1px}.castle .rr{right:1px}
+.castle .gate{position:absolute;left:38px;bottom:6px;width:12px;height:22px;background:#4a392e;border-radius:9px 9px 0 0}
+.castle .flag{position:absolute;left:43px;top:-14px;width:3px;height:22px;background:#40372f}
+.castle .flag:after{content:"";position:absolute;left:2px;top:1px;border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:14px solid #d2a846}
+.building{width:64px;height:62px}
+.building .roof{position:absolute;left:7px;top:7px;width:50px;height:28px;background:#a84b39;clip-path:polygon(50% 0,100% 65%,88% 65%,50% 30%,12% 65%,0 65%)}
+.building .body{position:absolute;left:15px;top:30px;width:34px;height:27px;background:#d4bd8b;border:3px solid #67523e}
+.building .door{position:absolute;left:26px;top:41px;width:11px;height:16px;background:#594235}
+.house .roof{background:#a74a39}.farm .roof{background:#c58c38}.sawmill .roof{background:#795b43}
+.quarry .roof{background:#666d70}.storage .roof{background:#565c82}.barracks .roof{background:#943d38}
+.smith .roof{background:#5e4e48}.tower .roof{background:#4d5f73}.wall{width:42px;height:18px;background:#8b8b7e;border:3px solid #5d5c55;transform:translate(-50%,-50%)!important}
+.bridge{width:42px;height:42px;background:#9c744d;border-top:6px solid #684b35;border-bottom:6px solid #684b35;transform:translate(-50%,-50%)!important}
+.portalBuilding{width:50px;height:50px;border:5px solid #b48de0;border-radius:50%;box-shadow:0 0 14px #a77bd5;transform:translate(-50%,-50%)!important}
+.unit{position:absolute;width:22px;height:30px;transform:translate(-50%,-75%);z-index:40;pointer-events:none}
+.unit:before{content:"";position:absolute;left:6px;top:0;width:10px;height:10px;background:#e3b07b;border:2px solid #5e4236;border-radius:50%}
+.unit:after{content:"";position:absolute;left:3px;top:11px;width:16px;height:14px;background:#486b8e;border-radius:4px;box-shadow:3px 13px 0 -4px #4b3a32,-3px 13px 0 -4px #4b3a32}
+.unit.enemy:after{background:#8c3d3d}.unit.soldier:after{background:#596477}
+.unit.dragon{width:46px;height:42px}.unit.dragon:before{left:16px;width:15px;height:15px;background:#b64b3d}.unit.dragon:after{left:7px;top:14px;width:32px;height:22px;background:#7d342d;box-shadow:10px -10px 0 -8px #efb04d}
+.unit.heal:after{background:#6aa55c}
+#effects .float{position:absolute;color:#fff;font-weight:900;text-shadow:1px 2px #000;font-size:18px;animation:floatUp 1.2s forwards;z-index:90}
+.fire{position:absolute;width:40px;height:40px;background:#e66c2c;clip-path:polygon(50% 0,65% 35%,100% 45%,70% 60%,82% 100%,50% 75%,20% 100%,28% 62%,0 50%,35% 34%);animation:fire .45s infinite alternate;z-index:25}
+@keyframes fire{to{transform:scale(1.08);filter:brightness(1.2)}}
+@keyframes floatUp{to{transform:translateY(-28px);opacity:0}}
+#top{position:fixed;z-index:100;left:0;right:0;top:0;min-height:52px;background:#252b32;border-bottom:3px solid #101215;display:flex;gap:4px;align-items:center;padding:4px 6px;padding-top:max(4px,env(safe-area-inset-top));overflow-x:auto;box-shadow:0 3px 10px #0008}
+.stat{flex:0 0 auto;min-width:60px;height:38px;padding:3px 7px;border:2px solid #4d5660;background:#343b43;color:#fff;border-radius:4px;font-size:11px;font-weight:700}.stat b{font-size:16px}.mode{margin-left:auto;text-align:right;color:#ffe28b;min-width:110px}
+#goal{position:fixed;z-index:101;top:58px;left:50%;transform:translateX(-50%);max-width:90%;background:#ececec;color:#222;border:3px solid #555;padding:5px 12px;border-radius:3px;font-weight:800;box-shadow:0 2px 7px #0007;text-align:center}
+#bottom{position:fixed;z-index:100;left:0;right:0;bottom:0;background:#282e34;border-top:3px solid #111;padding:6px;padding-bottom:max(6px,env(safe-area-inset-bottom));display:flex;gap:6px;overflow-x:auto}
+.btn{flex:0 0 auto;background:#454d56;color:#fff;border:2px solid #737d87;border-radius:4px;padding:8px 11px;font-weight:900}.btn:active{background:#69747d}
+#panel{position:fixed;z-index:150;left:5%;right:5%;top:10%;bottom:12%;background:#d6d6d6;color:#222;border:5px solid #555;box-shadow:0 12px 35px #000a;display:none;overflow:auto}
+.panelHead{background:#244d99;color:#fff;padding:8px 42px 8px 10px;font-weight:900;position:sticky;top:0;z-index:2}
+.close{position:absolute;right:7px;top:7px;background:#ddd;border:1px solid #555;font-weight:900}
+.panelBody{padding:10px}.card{background:#eee;border:2px solid #888;margin:7px 0;padding:9px}.card button{float:right;background:#355d9c;color:white;border:2px solid #234273;padding:5px 8px;border-radius:3px}.disabled{opacity:.5}
+.researchNode{border-left:5px solid #557bb0;padding-left:10px}
+#toast{position:fixed;z-index:220;left:50%;bottom:75px;transform:translateX(-50%);background:#242a31;color:#fff;border:2px solid #d0a84e;padding:8px 13px;border-radius:4px;opacity:0;transition:.2s;pointer-events:none;max-width:90%;text-align:center}
+#toast.show{opacity:1}
+#start,#pauseOverlay,#winOverlay{position:fixed;z-index:300;inset:0;background:rgba(15,18,22,.84);display:flex;align-items:center;justify-content:center;padding:18px}
+.modal{width:min(560px,94vw);max-height:90vh;overflow:auto;background:#d6d6d6;color:#222;border:5px solid #555;box-shadow:0 12px 40px #000; padding:16px}
+.modal h1{margin:0 0 8px}.modeBtn{display:block;width:100%;margin:8px 0;padding:12px;background:#365c95;color:#fff;border:2px solid #213d68;font-weight:900;text-align:left}.modeBtn small{display:block;font-weight:400;margin-top:3px}
+#pauseOverlay,#winOverlay{display:none}
+.progress{height:12px;background:#555;border:2px solid #333}.progress i{display:block;height:100%;background:#d4aa43;width:0}
+.small{font-size:12px;color:#444}
+@media(max-width:700px){.stat{min-width:57px}.mode{min-width:96px}.tile{width:38px;height:38px}.number{line-height:38px}.building{transform:translate(-50%,-70%)}}
 </style>
 </head>
 <body>
-<div id="game"><div id="world"><div id="map"></div><div id="buildings"></div><div id="units"></div><div id="fx"></div></div></div>
-<div id="top">
- <div class="stat">ðª <b id="gold">40</b></div><div class="stat">ðªµ <b id="wood">80</b></div><div class="stat">ðª¨ <b id="stone">50</b></div><div class="stat">ð¾ <b id="food">60</b></div><div class="stat">ð· <b id="workers">1/8</b></div><div class="stat">â <b id="soldiers">0/5</b></div><div class="stat mode">DRAGON HUNT<br><small>00:00</small></div>
+<div id="game">
+  <div id="world"><div id="map"></div><div id="paths"></div><div id="buildings"></div><div id="units"></div><div id="effects"></div></div>
 </div>
-<div id="goal">Ziel: Erkunde das Gebiet und finde die DrachenhÃ¶hle</div>
-<div id="hint"></div>
-<div id="bottom"><button class="btn" id="build">BAUEN</button><button class="btn" id="research">FORSCHUNG</button><button class="btn" id="treasure">SCHÃTZE</button><button class="btn" id="helpBtn">HILFE</button><button class="btn" id="pause">â¡</button></div>
-<div id="help"><button class="close" onclick="help.style.display='none'">X</button><div class="helpTitle">Keepsweeper-Hilfe</div><h3>1. Folge deinem Ziel</h3><p>ErfÃ¼lle das Ziel Ã¼ber dem Spielfeld. In der Drachenjagd musst du die DrachenhÃ¶hle finden und besiegen.</p><h3>2. Platziere deine Burg</h3><p>Tippe auf ein verdecktes Feld. Deine Burg bildet den Startpunkt deines KÃ¶nigreichs.</p><h3>3. Sammle Rohstoffe</h3><p>Decke Felder auf und lasse Arbeiter WÃ¤lder, Steine und SchÃ¤tze abbauen.</p><h3>4. Lies die Hinweise</h3><p>Zahlen zeigen an, wie viele besondere Orte in den acht Nachbarfeldern liegen. Auch diagonal zÃ¤hlt.</p><h3>5. Baue dein KÃ¶nigreich</h3><p>Baue HÃ¤user, Farmen, SÃ¤gewerke, SteinbrÃ¼che, Kasernen und Lager innerhalb deines Gebiets.</p><h3>6. Stelle eine Armee auf</h3><p>Kasernen schaffen ArmeeplÃ¤tze. Tippe auf sichtbare Feinde, um Einheiten zu schicken.</p><h3>7. Wappne dich gegen Drachenfeuer</h3><p>Drachenangriffe kÃ¶nnen mehrere Felder treffen. Feuer bleibt nach dem Angriff gefÃ¤hrlich.</p><h3>8. Erkunde die Wildnis</h3><p>BrÃ¼cken, Berge, WÃ¤lder, HÃ¶hlen, Ruinen und SchÃ¤tze machen jede Karte anders.</p></div>
+
+<div id="top">
+  <div class="stat">G <b id="gold">120</b></div>
+  <div class="stat">W <b id="wood">100</b></div>
+  <div class="stat">S <b id="stone">70</b></div>
+  <div class="stat">F <b id="food">80</b></div>
+  <div class="stat">A <b id="workers">2/8</b></div>
+  <div class="stat">K <b id="soldiers">0/5</b></div>
+  <div class="stat mode"><span id="modeName">DRAGON HUNT</span><br><small id="timer">00:00</small></div>
+</div>
+<div id="goal">Ziel: Erkunde die Welt und finde die Drachenhöhle.</div>
+
+<div id="bottom">
+  <button class="btn" id="buildBtn">BAUEN</button>
+  <button class="btn" id="researchBtn">FORSCHUNG</button>
+  <button class="btn" id="treasureBtn">SCHÄTZE</button>
+  <button class="btn" id="helpBtn">HILFE</button>
+  <button class="btn" id="saveBtn">SPEICHERN</button>
+  <button class="btn" id="pauseBtn">Ⅱ</button>
+</div>
+
+<div id="toast"></div>
+
+<div id="panel">
+  <div class="panelHead"><span id="panelTitle">Menü</span><button class="close" id="closePanel">X</button></div>
+  <div class="panelBody" id="panelBody"></div>
+</div>
+
+<div id="start">
+  <div class="modal">
+    <h1>Kingdom Sweeper</h1>
+    <p>Erkunde eine unbekannte Welt, baue dein Königreich auf, verwalte Arbeiter und Rohstoffe und stelle dich Gefahren. Das Aufdecken nutzt ein kleines Minesweeper-Hinweissystem.</p>
+    <button class="modeBtn" data-mode="dragon">DRAGON HUNT<small>Finde die Drachenhöhle und besiege den Drachen.</small></button>
+    <button class="modeBtn" data-mode="reclaim">RECLAMATION<small>Erkunde und besiedle eine große Wildnis. Ziel ist ein starkes Königreich.</small></button>
+    <button class="modeBtn" data-mode="siege">SIEGE<small>Überlebe Angriffswellen und verteidige deine Burg.</small></button>
+    <p class="small">Tipp: Tippen deckt auf. Ziehen bewegt die Karte. Zwei Finger zoomen. Gebäude werden innerhalb deines Gebiets platziert.</p>
+  </div>
+</div>
+
+<div id="pauseOverlay"><div class="modal"><h1>Pause</h1><p>Das Spiel ist angehalten.</p><button class="modeBtn" id="resumeBtn">WEITER</button><button class="modeBtn" id="restartBtn">NEUE KARTE</button></div></div>
+
+<div id="winOverlay"><div class="modal"><h1 id="winTitle">Sieg!</h1><p id="winText"></p><button class="modeBtn" id="newGameBtn">NEUES SPIEL</button></div></div>
+
 <script>
-const W=38,H=28,S=48,map=document.getElementById('map'),world=document.getElementById('world'),buildings=document.getElementById('buildings'),units=document.getElementById('units'),fx=document.getElementById('fx');
-let state={wood:80,stone:50,gold:40,food:60,workers:1,workerCap:8,soldiers:0,soldierCap:5,day:1,grid:[],revealed:[],placed:[]};
-let cam={x:0,y:0,z:1},castle={x:18,y:14},drag=false,lastX=0,lastY=0,moved=false,touches=new Map(),pinch=1,pinchDist=0;
-function worldgen(){state.grid=[];state.revealed=[];for(let y=0;y<H;y++)for(let x=0;x<W;x++){let r=Math.random(),t=r<.08?'water':r<.20?'forest':r<.29?'mountain':r<.33?'resource':'grass';state.grid.push(t);state.revealed.push(Math.hypot(x-castle.x,y-castle.y)<3.8)}}
-function neighbors(x,y){let n=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)if(dx||dy){let xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<W&&yy<H)n.push([xx,yy])}return n}
-function danger(x,y){return neighbors(x,y).filter(([a,b])=>state.grid[b*W+a]==='resource').length}
-function render(){map.innerHTML='';for(let y=0;y<H;y++)for(let x=0;x<W;x++){let d=document.createElement('div'),i=y*W+x,r=state.revealed[i],t=state.grid[i];d.className='tile '+(r?t:'hidden');d.style.left=x*S+'px';d.style.top=y*S+'px';if(r&&t==='resource'){d.className+=' gold';}if(r&&t==='grass'){let num=danger(x,y);if(num)d.innerHTML='<div class="number">'+num+'</div>'}map.appendChild(d)}}
-function castleDraw(){let c=document.createElement('div');c.className='castle';c.style.left=(castle.x*S+24)+'px';c.style.top=(castle.y*S+30)+'px';c.innerHTML='<div class="roof rl"></div><div class="roof rr"></div><div class="tower l"></div><div class="tower r"></div><div class="keep"></div><div class="gate"></div>';buildings.appendChild(c)}
-function building(type,x,y){let b=document.createElement('div');b.className='building '+type; b.style.left=(x*S+24)+'px';b.style.top=(y*S+32)+'px';b.innerHTML='<div class="roof"></div><div class="body"></div><div class="door"></div>';buildings.appendChild(b)}
-function renderBuildings(){buildings.innerHTML='';castleDraw();state.placed.forEach(p=>building(p.type,p.x,p.y))}
-function spawn(){units.innerHTML='';for(let i=0;i<state.workers;i++){let u=document.createElement('div');u.className='unit';units.appendChild(u);walk(u)}}
-function walk(u){u.style.left=((castle.x+Math.random()*7-3.5)*S+24)+'px';u.style.top=((castle.y+Math.random()*7-3.5)*S+30)+'px';setTimeout(()=>walk(u),1800+Math.random()*2200)}
-function update(){for(const id of ['gold','wood','stone','food'])document.getElementById(id).textContent=Math.floor(state[id]);document.getElementById('workers').textContent=state.workers+'/'+state.workerCap;document.getElementById('soldiers').textContent=state.soldiers+'/'+state.soldierCap}
-function msg(t){hint.textContent=t;hint.classList.add('show');clearTimeout(msg.t);msg.t=setTimeout(()=>hint.classList.remove('show'),1400)}
-function float(x,y,t){let f=document.createElement('div');f.className='floating';f.textContent=t;f.style.left=x*S+'px';f.style.top=y*S+'px';fx.appendChild(f);setTimeout(()=>f.remove(),1200)}
-function reveal(x,y){let i=y*W+x;if(state.revealed[i])return;state.revealed[i]=true;let t=state.grid[i];if(t==='resource'){state.gold+=5;float(x*S/ S*1,y,'+5 GOLD')}else if(t==='forest'){state.wood+=4;float(x,y,'+4 WOOD')}else if(t==='mountain'){state.stone+=3;float(x,y,'+3 STONE')}if(Math.random()<.08){state.gold+=15;msg('Schatz gefunden! +15 Gold')}render();update();save()}
-game.addEventListener('click',e=>{if(moved)return;let r=game.getBoundingClientRect(),wx=(e.clientX-r.left-cam.x)/cam.z,wy=(e.clientY-r.top-cam.y)/cam.z,x=Math.floor(wx/S),y=Math.floor(wy/S);if(x>=0&&y>=0&&x<W&&y<H)reveal(x,y)})
-function apply(){world.style.transform=`translate(${cam.x}px,${cam.y}px) scale(${cam.z})`}
-function center(){cam.z=.95;cam.x=innerWidth/2-(castle.x*S+24)*cam.z;cam.y=innerHeight/2-(castle.y*S+30)*cam.z;apply()}
-game.addEventListener('pointerdown',e=>{drag=true;moved=false;lastX=e.clientX;lastY=e.clientY;game.setPointerCapture(e.pointerId)})
-game.addEventListener('pointermove',e=>{if(!drag)return;let dx=e.clientX-lastX,dy=e.clientY-lastY;if(Math.abs(dx)+Math.abs(dy)>4)moved=true;cam.x+=dx;cam.y+=dy;lastX=e.clientX;lastY=e.clientY;apply()})
-game.addEventListener('pointerup',()=>drag=false)
-game.addEventListener('touchstart',e=>{for(const t of e.changedTouches)touches.set(t.identifier,t);if(touches.size===2){let a=[...touches.values()][0],b=[...touches.values()][1];pinchDist=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);pinch=cam.z}},{passive:false})
-game.addEventListener('touchmove',e=>{if(touches.size!==2)return;e.preventDefault();for(const t of e.changedTouches)touches.set(t.identifier,t);let a=[...touches.values()][0],b=[...touches.values()][1],d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);cam.z=Math.max(.55,Math.min(1.8,pinch*d/pinchDist));apply()},{passive:false})
-game.addEventListener('touchend',e=>{for(const t of e.changedTouches)touches.delete(t.identifier)})
-document.getElementById('build').onclick=()=>{if(state.wood<25)return msg('Nicht genug Holz');state.wood-=25;let types=['house','farm','sawmill','quarry','barracks'],type=types[state.placed.length%types.length],x=castle.x+Math.floor(Math.random()*9-4),y=castle.y+Math.floor(Math.random()*9-4);state.placed.push({type,x,y});if(type==='house'){state.workers=Math.min(state.workerCap,state.workers+1)}if(type==='barracks')state.soldierCap+=2;renderBuildings();spawn();update();save();msg('GebÃ¤ude gebaut')};
-document.getElementById('research').onclick=()=>msg('Forschung: BrÃ¼cken, Farmhands, Festungen und TÃ¼rme werden freigeschaltet');
-document.getElementById('treasure').onclick=()=>msg('SchÃ¤tze: kommende Belohnungen werden hier gesammelt');
-document.getElementById('helpBtn').onclick=()=>help.style.display='block';
-document.getElementById('pause').onclick=e=>{let on=e.target.textContent==='â¡';e.target.textContent=on?'â¶':'â¡';msg(on?'Pause':'Weiter')};
-function save(){localStorage.setItem('ks_final',JSON.stringify(state))}
-function load(){try{let s=JSON.parse(localStorage.getItem('ks_final'));if(s){state=s;return true}}catch(e){}return false}
-if(!load()){worldgen();save()}render();renderBuildings();spawn();update();center();
-setInterval(()=>{state.day++;state.wood+=state.placed.filter(p=>p.type==='sawmill').length*2;state.stone+=state.placed.filter(p=>p.type==='quarry').length*2;state.food+=state.placed.filter(p=>p.type==='farm').length*3-state.placed.filter(p=>p.type==='house').length;update();save()},5000);
+'use strict';
+
+/* ---------- CONSTANTS ---------- */
+const W=80,H=80,S=40;
+const TYPES={grass:0,forest:1,water:2,mountain:3,gold:4,stone:5,food:6,ruin:7,cave:8,treasure:9,crypt:10,dragonCave:11,portal:12};
+const DIRS=[[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
+const BUILDINGS={
+  house:{name:'Haus',cost:{wood:30,stone:0,gold:0,food:0},time:7,cap:2},
+  farm:{name:'Farm',cost:{wood:35,stone:10,gold:0,food:0},time:8,prod:'food',amount:5},
+  sawmill:{name:'Sägewerk',cost:{wood:50,stone:10,gold:0,food:0},time:10,prod:'wood',amount:5},
+  quarry:{name:'Steinbruch',cost:{wood:45,stone:15,gold:0,food:0},time:10,prod:'stone',amount:4},
+  storage:{name:'Lager',cost:{wood:50,stone:25,gold:10,food:0},time:12,cap:50},
+  barracks:{name:'Kaserne',cost:{wood:70,stone:45,gold:20,food:0},time:14,army:5},
+  smith:{name:'Schmiede',cost:{wood:55,stone:40,gold:30,food:0},time:14},
+  tower:{name:'Wachturm',cost:{wood:35,stone:65,gold:15,food:0},time:10,territory:3},
+  wall:{name:'Mauer',cost:{wood:10,stone:20,gold:0,food:0},time:4},
+  bridge:{name:'Brücke',cost:{wood:35,stone:5,gold:0,food:0},time:7}
+};
+const RESEARCH={
+  bridges:{name:'Brückenbau',cost:{wood:60,stone:30,gold:30},desc:'Brücken über Wasser bauen.'},
+  farmhands:{name:'Farmhands',cost:{wood:50,stone:20,gold:40},desc:'Farms produce 50% mehr Nahrung.'},
+  walls:{name:'Mauern',cost:{wood:40,stone:70,gold:35},desc:'Mauern und verbesserte Verteidigung.'},
+  elevation:{name:'Höhenforschung',cost:{wood:60,stone:80,gold:50},desc:'Bergregionen werden passierbarer.'},
+  goatStables:{name:'Ziegenställe',cost:{wood:55,stone:30,gold:25},desc:'Ziegenherden erscheinen in Bergregionen.'},
+  advancedArmy:{name:'Militär II',cost:{wood:70,stone:70,gold:90},desc:'Mehr Soldatenplätze und stärkerer Angriff.'},
+  godStatue:{name:'Götterstatue',cost:{wood:100,stone:150,gold:150},desc:'Schaltet eine mächtige einmalige Verstärkung frei.'}
+};
+
+/* ---------- DOM ---------- */
+const game=document.getElementById('game'), world=document.getElementById('world');
+const mapEl=document.getElementById('map'), buildingsEl=document.getElementById('buildings'), unitsEl=document.getElementById('units'), effectsEl=document.getElementById('effects');
+const panel=document.getElementById('panel'), panelTitle=document.getElementById('panelTitle'), panelBody=document.getElementById('panelBody');
+const toast=document.getElementById('toast');
+const goal=document.getElementById('goal');
+
+/* ---------- STATE ---------- */
+let state=null;
+let camera={x:0,y:0,z:.85};
+let pointer={down:false,moved:false,x:0,y:0};
+let touches=new Map(), pinchDist=0,pinchZoom=.85;
+let lastTime=performance.now(), productionTimer=0, enemyTimer=0, elapsed=0;
+let selected=null, paused=false, gameWon=false, buildMode=null;
+
+/* ---------- UTILS ---------- */
+function key(x,y){return y*W+x}
+function inside(x,y){return x>=0&&y>=0&&x<W&&y<H}
+function neighbors(x,y){const out=[];for(const [dx,dy] of DIRS){const a=x+dx,b=y+dy;if(inside(a,b))out.push([a,b])}return out}
+function dist(a,b,c,d){return Math.hypot(a-c,b-d)}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function toastMsg(t){
+  toast.textContent=t;toast.classList.add('show');clearTimeout(toastMsg.t);
+  toastMsg.t=setTimeout(()=>toast.classList.remove('show'),1700);
+}
+function floatText(x,y,text){
+  const f=document.createElement('div');f.className='float';f.textContent=text;
+  f.style.left=(x*S+10)+'px';f.style.top=(y*S)+'px';effectsEl.appendChild(f);
+  setTimeout(()=>f.remove(),1200);
+}
+function canAfford(cost){
+  return Object.entries(cost).every(([k,v])=>(state[k]||0)>=v);
+}
+function pay(cost){for(const [k,v] of Object.entries(cost))state[k]-=v}
+function formatTime(sec){sec=Math.floor(sec);return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')}
+function randomChoice(a){return a[Math.floor(Math.random()*a.length)]}
+
+/* ---------- WORLD GENERATION ---------- */
+function generateWorld(mode){
+  const cx=40,cy=40;
+  const grid=new Array(W*H), revealed=new Array(W*H).fill(false);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const d=dist(x,y,cx,cy);
+    let t=TYPES.grass;
+    const r=Math.random();
+    if(d>8 && r<.10)t=TYPES.water;
+    else if(r<.23)t=TYPES.forest;
+    else if(r<.31)t=TYPES.mountain;
+    else if(r<.36)t=TYPES.stone;
+    else if(r<.40)t=TYPES.gold;
+    else if(r<.43)t=TYPES.food;
+    grid[key(x,y)]=t;
+  }
+  // water corridors
+  for(let y=5;y<75;y++){
+    if(Math.random()<.18){
+      const x=10+Math.floor(Math.random()*60);
+      for(let k=-2;k<=2;k++)if(inside(x+k,y))grid[key(x+k,y)]=TYPES.water;
+    }
+  }
+  // special locations far enough from start
+  function placeSpecial(type,count,minD){
+    let tries=0;
+    while(count>0&&tries<10000){
+      tries++;const x=3+Math.floor(Math.random()*(W-6)),y=3+Math.floor(Math.random()*(H-6));
+      if(dist(x,y,cx,cy)<minD)continue;
+      const i=key(x,y);
+      if([TYPES.water,TYPES.mountain,TYPES.dragonCave,TYPES.cave,TYPES.crypt,TYPES.treasure,TYPES.ruin].includes(grid[i]))continue;
+      grid[i]=type;count--;
+    }
+  }
+  placeSpecial(TYPES.cave,10,10);
+  placeSpecial(TYPES.ruin,8,9);
+  placeSpecial(TYPES.treasure,7,12);
+  placeSpecial(TYPES.crypt,5,18);
+  placeSpecial(TYPES.portal,2,22);
+  placeSpecial(TYPES.dragonCave,1,25);
+
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    if(dist(x,y,cx,cy)<4.2)revealed[key(x,y)]=true;
+  }
+  return {
+    mode,grid,revealed,cx,cy,
+    gold:120,wood:100,stone:70,food:80,
+    workers:2,workerCap:8,soldiers:0,soldierCap:5,
+    buildings:[{type:'castle',x:cx,y:cy,done:true}],
+    workersList:[],
+    soldiersList:[],
+    enemies:[],
+    fires:[],
+    portals:[],
+    explored:revealed.filter(Boolean).length,
+    seals:0,day:1,elapsed:0,waves:0,
+    research:{},
+    buildQueue:[],
+    digQueue:[],
+    treasureFound:0,
+    cavesDefeated:0,
+    dragonAlive:true,
+    siegeWave:0,
+    siegeBest:0,
+    reputation:0,
+    godBlessing:null
+  };
+}
+
+/* ---------- SAVE/LOAD ---------- */
+function saveGame(){
+  try{localStorage.setItem('kingdom_sweeper_full',JSON.stringify(state));toastMsg('Spiel gespeichert.')}
+  catch(e){toastMsg('Speichern nicht möglich.')}
+}
+function loadGame(){
+  try{const raw=localStorage.getItem('kingdom_sweeper_full');if(raw){state=JSON.parse(raw);return true}}catch(e){}
+  return false;
+}
+
+/* ---------- MAP / HINTS ---------- */
+function specialNearby(x,y){
+  let n=0;
+  for(const [a,b] of neighbors(x,y)){
+    const t=state.grid[key(a,b)];
+    if([TYPES.cave,TYPES.treasure,TYPES.crypt,TYPES.dragonCave,TYPES.ruin,TYPES.portal].includes(t))n++;
+  }
+  return n;
+}
+function tileClass(t){
+  return Object.keys(TYPES).find(k=>TYPES[k]===t)||'grass';
+}
+function renderMap(){
+  mapEl.innerHTML='';
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const i=key(x,y),el=document.createElement('div');
+    el.className='tile '+(state.revealed[i]?tileClass(state.grid[i]):'hidden');
+    el.style.left=(x*S)+'px';el.style.top=(y*S)+'px';
+    if(state.revealed[i]){
+      const t=state.grid[i];
+      if([TYPES.grass,TYPES.forest,TYPES.stone,TYPES.gold,TYPES.food].includes(t)){
+        const n=specialNearby(x,y);
+        if(n){const q=document.createElement('div');q.className='number n'+Math.min(n,5);q.textContent=n;el.appendChild(q)}
+      }
+      if(dist(x,y,state.cx,state.cy)<=5 && state.revealed[i])el.classList.add('borderTile');
+    }
+    if(selected&&selected.x===x&&selected.y===y)el.classList.add('selected');
+    el.dataset.x=x;el.dataset.y=y;
+    mapEl.appendChild(el);
+  }
+}
+function reveal(x,y){
+  if(!inside(x,y)||state.revealed[key(x,y)]||paused||gameWon)return;
+  state.revealed[key(x,y)]=true;state.explored++;
+  const t=state.grid[key(x,y)];
+  if(t===TYPES.gold){state.gold+=8;floatText(x,y,'+8 GOLD')}
+  if(t===TYPES.stone){state.stone+=5;floatText(x,y,'+5 STEIN')}
+  if(t===TYPES.food){state.food+=6;floatText(x,y,'+6 NAHRUNG')}
+  if(t===TYPES.forest){state.wood+=4;floatText(x,y,'+4 HOLZ')}
+  if(t===TYPES.treasure){state.gold+=50;state.wood+=20;state.treasureFound++;state.seals++;toastMsg('Schatz gefunden: +50 Gold, +20 Holz, +1 Siegel');floatText(x,y,'SCHATZ!')}
+  if(t===TYPES.ruin){state.gold+=25;toastMsg('Ruine durchsucht: +25 Gold')}
+  if(t===TYPES.cave){spawnCaveEnemy(x,y);toastMsg('Eine Höhle! Gegner wurden entdeckt.')}
+  if(t===TYPES.crypt){spawnCrypt(x,y);toastMsg('Krypta entdeckt: ein Portal wird aktiv.')}
+  if(t===TYPES.portal){activatePortal(x,y);toastMsg('Dunkles Portal! Skelette greifen an.')}
+  if(t===TYPES.dragonCave&&state.mode==='dragon'){toastMsg('Die Drachenhöhle wurde gefunden! Bereite deine Armee vor.');goal.textContent='Ziel: Besiege den Drachen in der Höhle.'}
+  renderMap();renderBuildings();saveGame();
+}
+
+/* ---------- PATHFINDING ---------- */
+function blocked(x,y,forBuilding=false){
+  if(!inside(x,y))return true;
+  const t=state.grid[key(x,y)];
+  if(t===TYPES.water)return true;
+  if(t===TYPES.mountain&&!state.research.elevation)return true;
+  if(state.buildings.some(b=>b.done&&b.x===x&&b.y===y&&b.type!=='bridge'))return true;
+  if(forBuilding && state.buildings.some(b=>b.x===x&&b.y===y))return true;
+  return false;
+}
+function findPath(sx,sy,tx,ty){
+  if(!inside(tx,ty))return [];
+  const start=key(sx,sy),goalK=key(tx,ty),open=[start],came=new Map(),g=new Map([[start,0]]),f=new Map([[start,dist(sx,sy,tx,ty)]]);
+  const used=new Set();
+  while(open.length){
+    open.sort((a,b)=>(f.get(a)||1e9)-(f.get(b)||1e9));
+    const cur=open.shift();if(cur===goalK){
+      const path=[];let c=cur;while(c!==start){const x=c%W,y=Math.floor(c/W);path.push([x,y]);c=came.get(c)}path.reverse();return path;
+    }
+    used.add(cur);
+    const cx=cur%W,cy=Math.floor(cur/W);
+    for(const [nx,ny] of [[cx-1,cy],[cx+1,cy],[cx,cy-1],[cx,cy+1]]){
+      if(!inside(nx,ny))continue;
+      const nk=key(nx,ny);
+      if(used.has(nk)||blocked(nx,ny))continue;
+      const ng=(g.get(cur)||0)+((state.grid[nk]===TYPES.mountain)?2:1);
+      if(!g.has(nk)||ng<g.get(nk)){came.set(nk,cur);g.set(nk,ng);f.set(nk,ng+dist(nx,ny,tx,ty));if(!open.includes(nk))open.push(nk)}
+    }
+  }
+  return [];
+}
+
+/* ---------- UNITS ---------- */
+function makeUnit(kind,x,y,target=null){
+  return {id:Math.random().toString(36).slice(2),kind,x,y,target,path:[],step:0,hp:kind==='dragon'?500:kind==='enemy'?45:kind==='soldier'?100:60,task:null,carrying:0};
+}
+function spawnWorkers(){
+  state.workersList=[];
+  for(let i=0;i<state.workers;i++)state.workersList.push(makeUnit('worker',state.cx+Math.random()*2-1,state.cy+Math.random()*2-1));
+}
+function spawnCaveEnemy(x,y){
+  state.enemies.push(makeUnit('enemy',x,y,[x,y]));
+}
+function spawnCrypt(x,y){
+  state.portals.push({x,y,active:true});
+  state.enemies.push(makeUnit('enemy',x,y,[x,y]));
+}
+function activatePortal(x,y){
+  state.portals.push({x,y,active:true});
+}
+function spawnSoldier(){
+  if(state.soldiers>=state.soldierCap)return false;
+  state.soldiers++;
+  state.soldiersList.push(makeUnit('soldier',state.cx+Math.random()*2-1,state.cy+Math.random()*2-1));
+  return true;
+}
+function sendSoldiersTo(x,y){
+  if(!state.soldiersList.length){toastMsg('Keine Soldaten verfügbar.');return}
+  for(const s of state.soldiersList){
+    s.target=[x,y];s.path=findPath(Math.round(s.x),Math.round(s.y),x,y);s.step=0;
+  }
+  toastMsg('Soldaten rücken aus.');
+}
+function renderUnits(){
+  unitsEl.innerHTML='';
+  for(const u of [...state.workersList,...state.soldiersList,...state.enemies]){
+    const el=document.createElement('div');
+    el.className='unit '+u.kind;
+    el.style.left=(u.x*S+20)+'px';el.style.top=(u.y*S+22)+'px';
+    unitsEl.appendChild(el);
+  }
+  if(state.dragonAlive&&state.mode==='dragon'){
+    const dc=findDragonCave();
+    if(dc){
+      const d=makeUnit('dragon',dc.x,dc.y);d.hp=state.dragonHp||500;
+      const el=document.createElement('div');el.className='unit dragon';el.style.left=(d.x*S+20)+'px';el.style.top=(d.y*S+18)+'px';unitsEl.appendChild(el);
+    }
+  }
+}
+function moveAlongPath(u,dt){
+  if(!u.path||u.step>=u.path.length)return false;
+  const [tx,ty]=u.path[u.step],dx=tx-u.x,dy=ty-u.y,len=Math.hypot(dx,dy)||1;
+  const speed=u.kind==='enemy'?.9:u.kind==='soldier'?1.5:1.1;
+  const step=speed*dt;
+  if(len<=step){u.x=tx;u.y=ty;u.step++;}else{u.x+=dx/len*step;u.y+=dy/len*step}
+  return true;
+}
+
+/* ---------- WORK ---------- */
+function nearestResource(x,y){
+  let best=null,bd=1e9;
+  for(let yy=Math.max(0,y-10);yy<=Math.min(H-1,y+10);yy++)for(let xx=Math.max(0,x-10);xx<=Math.min(W-1,x+10);xx++){
+    const t=state.grid[key(xx,yy)];
+    if(!state.revealed[key(xx,yy)])continue;
+    if(![TYPES.forest,TYPES.gold,TYPES.stone,TYPES.food].includes(t))continue;
+    const d=dist(x,y,xx,yy);if(d<bd){bd=d;best=[xx,yy]}
+  }
+  return best;
+}
+function updateWorkers(dt){
+  for(const w of state.workersList){
+    if(w.task==='build'&&w.target){
+      if(!w.path.length||w.step>=w.path.length)w.path=findPath(Math.round(w.x),Math.round(w.y),w.target[0],w.target[1]);
+      moveAlongPath(w,dt);
+      continue;
+    }
+    if(w.task==='collect'&&w.target){
+      if(dist(w.x,w.y,w.target[0],w.target[1])<.4){
+        if(w.carrying<=0){
+          const t=state.grid[key(w.target[0],w.target[1])];
+          const res=t===TYPES.forest?'wood':t===TYPES.gold?'gold':t===TYPES.stone?'stone':'food';
+          w.carrying=2;w.task='return';w.res=res;
+        }
+      }else{
+        if(!w.path.length||w.step>=w.path.length)w.path=findPath(Math.round(w.x),Math.round(w.y),w.target[0],w.target[1]);
+        moveAlongPath(w,dt);
+      }
+    }else if(w.task==='return'){
+      if(dist(w.x,w.y,state.cx,state.cy)<1){
+        state[w.res]+=w.carrying;floatText(state.cx,state.cy,'+'+w.carrying+' '+w.res.toUpperCase());w.carrying=0;w.task=null;w.path=[];
+      }else{
+        if(!w.path.length||w.step>=w.path.length)w.path=findPath(Math.round(w.x),Math.round(w.y),state.cx,state.cy);
+        moveAlongPath(w,dt);
+      }
+    }else{
+      const r=nearestResource(state.cx,state.cy);
+      if(r){w.task='collect';w.target=r;w.path=[]}
+    }
+  }
+}
+function production(){
+  for(const b of state.buildings){
+    if(!b.done)continue;
+    if(b.type==='farm'){state.food+=state.research.farmhands?8:5}
+    if(b.type==='sawmill')state.wood+=5
+    if(b.type==='quarry')state.stone+=4
+    if(b.type==='house')state.food=Math.max(0,state.food-1)
+  }
+  // automatic barracks recruitment
+  const barracks=state.buildings.filter(b=>b.type==='barracks'&&b.done).length;
+  const target=Math.min(state.soldierCap,barracks*2+1);
+  while(state.soldiers<target)spawnSoldier();
+}
+
+/* ---------- BUILDINGS / TERRITORY ---------- */
+function territoryRadius(){
+  return 6+state.buildings.filter(b=>b.type==='tower'&&b.done).length*3;
+}
+function inTerritory(x,y){
+  let ok=dist(x,y,state.cx,state.cy)<=territoryRadius();
+  if(!ok)ok=state.buildings.some(b=>b.type==='tower'&&b.done&&dist(x,y,b.x,b.y)<=4);
+  return ok;
+}
+function buildingAt(x,y){return state.buildings.find(b=>b.x===x&&b.y===y)}
+function placeBuilding(type,x,y){
+  const def=BUILDINGS[type];
+  if(!def)return false;
+  if(!canAfford(def.cost)){toastMsg('Nicht genug Rohstoffe.');return false}
+  if(!inTerritory(x,y)){toastMsg('Außerhalb deines Gebiets.');return false}
+  if(!state.revealed[key(x,y)]){toastMsg('Dieser Ort ist noch unbekannt.');return false}
+  if(buildingAt(x,y)){toastMsg('Hier steht bereits ein Gebäude.');return false}
+  if(type==='bridge'&&state.grid[key(x,y)]!==TYPES.water){toastMsg('Brücken gehören auf Wasser.');return false}
+  if(type!=='bridge'&&state.grid[key(x,y)]===TYPES.water){toastMsg('Hier ist Wasser.');return false}
+  if(type==='bridge'&&!state.research.bridges){toastMsg('Erst Brücken erforschen.');return false}
+  if(type==='wall'&&!state.research.walls){toastMsg('Erst Mauern erforschen.');return false}
+  pay(def.cost);
+  const b={type,x,y,done:false,progress:0,time:def.time};
+  state.buildings.push(b);
+  const w=state.workersList.find(u=>!u.task);
+  if(w){w.task='build';w.target=[x,y];w.path=findPath(Math.round(w.x),Math.round(w.y),x,y)}
+  else{b.progress=def.time}
+  buildMode=null;renderBuildings();updateUI();saveGame();toastMsg(def.name+' wird gebaut.');
+  return true;
+}
+function renderBuildings(){
+  buildingsEl.innerHTML='';
+  for(const b of state.buildings){
+    const el=document.createElement('div');el.className=(b.type==='castle'?'castle':'building '+b.type);
+    el.style.left=(b.x*S+20)+'px';el.style.top=(b.y*S+22)+'px';
+    if(b.type==='castle')el.innerHTML='<div class="roof rl"></div><div class="roof rr"></div><div class="tower l"></div><div class="tower r"></div><div class="keep"></div><div class="gate"></div><div class="flag"></div>';
+    else if(b.type==='wall')el.className='wall';
+    else if(b.type==='bridge')el.className='bridge';
+    else if(b.type==='portalBuilding')el.className='portalBuilding';
+    else el.innerHTML='<div class="roof"></div><div class="body"></div><div class="door"></div>';
+    if(!b.done){el.style.opacity=.5;el.title='Baufortschritt '+Math.floor(b.progress/b.time*100)+'%'}
+    buildingsEl.appendChild(el);
+  }
+}
+function updateConstruction(dt){
+  for(const b of state.buildings){
+    if(b.done||b.type==='castle')continue;
+    b.progress+=dt;
+    if(b.progress>=b.time){
+      b.progress=b.time;b.done=true;
+      if(b.type==='house')state.workerCap+=2;
+      if(b.type==='barracks')state.soldierCap+=5;
+      if(b.type==='tower')state.reputation+=5;
+      toastMsg(BUILDINGS[b.type].name+' fertig!');
+      spawnWorkers();
+    }
+  }
+}
+
+/* ---------- COMBAT ---------- */
+function damageEnemy(enemy,amount){
+  enemy.hp-=amount;
+  floatText(Math.round(enemy.x),Math.round(enemy.y),'-'+amount);
+  if(enemy.hp<=0){
+    state.enemies=state.enemies.filter(e=>e.id!==enemy.id);
+    state.gold+=15;state.cavesDefeated++;toastMsg('Gegner besiegt: +15 Gold');
+  }
+}
+function combat(dt){
+  for(const s of state.soldiersList){
+    if(s.target){
+      const enemy=state.enemies.find(e=>dist(e.x,e.y,s.target[0],s.target[1])<2);
+      if(enemy&&dist(s.x,s.y,enemy.x,enemy.y)<1.5){
+        if(!s.cool)s.cool=0;
+        s.cool-=dt;
+        if(s.cool<=0){damageEnemy(enemy,state.research.advancedArmy?25:18);s.cool=.8}
+      }else if(s.path.length===0||s.step>=s.path.length){
+        s.path=findPath(Math.round(s.x),Math.round(s.y),s.target[0],s.target[1]);s.step=0;
+      }else moveAlongPath(s,dt);
+    }
+  }
+  for(const e of state.enemies){
+    const target=state.soldiersList.find(s=>dist(s.x,s.y,e.x,e.y)<2);
+    if(target){
+      e.cool=(e.cool||0)-dt;
+      if(e.cool<=0){target.hp-=10;e.cool=1;if(target.hp<=0){state.soldiersList=state.soldiersList.filter(s=>s!==target);state.soldiers=Math.max(0,state.soldiers-1)}}
+    }else{
+      const p=findPath(Math.round(e.x),Math.round(e.y),state.cx,state.cy);
+      if(p.length){e.path=p;e.step=0;moveAlongPath(e,dt)}
+    }
+  }
+}
+
+/* ---------- DRAGON ---------- */
+function findDragonCave(){
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(state.grid[key(x,y)]===TYPES.dragonCave)return{x,y};
+  return null;
+}
+function dragonAttack(){
+  if(!state.dragonAlive||state.mode!=='dragon')return;
+  const dc=findDragonCave();if(!dc)return;
+  const targets=state.soldiersList.filter(s=>dist(s.x,s.y,dc.x,dc.y)<5);
+  if(targets.length){
+    const t=randomChoice(targets);
+    t.hp-=30;
+    state.fires.push({x:Math.round(t.x),y:Math.round(t.y),time:5});
+    toastMsg('Der Drache speit Feuer!');
+  }
+}
+function attackDragon(){
+  if(!state.dragonAlive||state.mode!=='dragon'){toastMsg('Kein Drache verfügbar.');return}
+  const dc=findDragonCave();
+  if(!dc||!state.revealed[key(dc.x,dc.y)]){toastMsg('Finde zuerst die Drachenhöhle.');return}
+  if(state.soldiers<3){toastMsg('Mindestens 3 Soldaten werden empfohlen.');return}
+  state.dragonHp=state.dragonHp||500;
+  state.dragonHp-=state.research.advancedArmy?80:55;
+  floatText(dc.x,dc.y,'-'+(state.research.advancedArmy?80:55));
+  dragonAttack();
+  if(state.dragonHp<=0){
+    state.dragonAlive=false;state.seals+=2;state.reputation+=50;goal.textContent='Ziel erreicht!';
+    win('Drachen besiegt','Dein Königreich hat die Drachenhöhle bezwungen. Du erhältst 2 Königssiegel.');
+  }
+}
+
+/* ---------- SIEGE ---------- */
+function startSiegeWave(){
+  if(state.mode!=='siege')return;
+  state.siegeWave++;state.waves=state.siegeWave;
+  const count=2+Math.floor(state.siegeWave/2);
+  for(let i=0;i<count;i++){
+    const side=randomChoice([[2,2],[W-3,2],[2,H-3],[W-3,H-3]]);
+    state.enemies.push(makeUnit('enemy',side[0],side[1],[state.cx,state.cy]));
+  }
+  if(state.siegeWave%3===0){state.gold+=30;state.treasureFound++;toastMsg('Wellen-Schatz: +30 Gold')}
+  goal.textContent='Ziel: Überlebe die Belagerung. Welle '+state.siegeWave;
+}
+
+/* ---------- RESEARCH / MENUS ---------- */
+function openPanel(title,body){panelTitle.textContent=title;panelBody.innerHTML=body;panel.style.display='block'}
+function closePanel(){panel.style.display='none'}
+function buildMenu(){
+  let h='<p>Wähle ein Gebäude. Der Bau startet sofort nach der Platzierung.</p>';
+  for(const [type,d] of Object.entries(BUILDINGS)){
+    if(type==='bridge'&&!state.research.bridges)continue;
+    if(type==='wall'&&!state.research.walls)continue;
+    h+=`<div class="card"><b>${d.name}</b><br><span class="small">Bauzeit: ${d.time}s${d.prod?' · Produktion: '+d.prod:''}</span><br>
+    Kosten: Holz ${d.cost.wood} · Stein ${d.cost.stone} · Gold ${d.cost.gold}
+    <button data-build="${type}">AUSWÄHLEN</button></div>`;
+  }
+  openPanel('Bauen',h);
+  panelBody.querySelectorAll('[data-build]').forEach(b=>b.onclick=()=>{buildMode=b.dataset.build;closePanel();toastMsg('Tippe auf ein freies Feld in deinem Gebiet.');});
+}
+function researchMenu(){
+  let h='<p>Forschung bleibt für das nächste Königreich erhalten, wenn du sie im Spiel freischaltest.</p>';
+  for(const [id,r] of Object.entries(RESEARCH)){
+    const done=state.research[id];
+    h+=`<div class="card ${done?'disabled':''} researchNode"><b>${r.name}</b><br><span class="small">${r.desc}</span><br>Kosten: ${r.cost.wood} Holz · ${r.cost.stone} Stein · ${r.cost.gold} Gold
+    ${done?'<button disabled>ERFORSCHT</button>':`<button data-research="${id}">FORSCHEN</button>`}</div>`;
+  }
+  openPanel('Forschung',h);
+  panelBody.querySelectorAll('[data-research]').forEach(b=>b.onclick=()=>{
+    const id=b.dataset.research,r=RESEARCH[id];
+    if(!canAfford(r.cost)){toastMsg('Nicht genug Rohstoffe.');return}
+    pay(r.cost);state.research[id]=true;
+    if(id==='advancedArmy')state.soldierCap+=5;
+    if(id==='godStatue'){state.godBlessing=randomChoice(['Mehr Nahrung','Stärkere Soldaten','Schnellere Produktion']);toastMsg('Ein Wunder wurde gewählt: '+state.godBlessing)}
+    updateUI();saveGame();researchMenu();
+  });
+}
+function treasureMenu(){
+  openPanel('Schätze & Chronik',`<div class="card"><b>Gefundene Schätze:</b> ${state.treasureFound}</div>
+  <div class="card"><b>Königssiegel:</b> ${state.seals}</div>
+  <div class="card"><b>Erkundung:</b> ${state.explored}/${W*H} Felder</div>
+  <div class="card"><b>Besiegte Höhlen:</b> ${state.cavesDefeated}</div>
+  <div class="card"><b>Beste Belagerung:</b> ${state.siegeBest}</div>
+  <div class="card"><b>Ruf:</b> ${state.reputation}</div>`);
+}
+function helpMenu(){
+  openPanel('Keepsweeper-Hilfe',`
+  <div class="card"><b>1. Erkunde</b><br>Tippe auf unbekannte Felder. Zahlen zählen besondere Orte in den acht Nachbarfeldern.</div>
+  <div class="card"><b>2. Arbeiter</b><br>Arbeiter suchen sichtbare Rohstoffquellen, sammeln und bringen Ressourcen zur Burg.</div>
+  <div class="card"><b>3. Bauen</b><br>Gebäude brauchen Ressourcen und Bauzeit. Häuser erhöhen dein Arbeiterlimit, Kasernen dein Soldatenlimit.</div>
+  <div class="card"><b>4. Gebiet</b><br>Du kannst nur innerhalb deiner Grenzen bauen. Wachtürme erweitern die Reichweite.</div>
+  <div class="card"><b>5. Kampf</b><br>Tippe eine sichtbare Höhle oder einen Gegner an, um deine Soldaten dorthin zu schicken.</div>
+  <div class="card"><b>6. Drachen</b><br>Im Dragon-Hunt-Modus musst du die Drachenhöhle finden und den Boss besiegen.</div>
+  <div class="card"><b>7. Touch</b><br>Ein Finger verschiebt die Karte, Tippen deckt auf. Zwei Finger zoomen.</div>
+  `);
+}
+
+/* ---------- INPUT ---------- */
+function screenToTile(clientX,clientY){
+  const r=game.getBoundingClientRect();
+  const wx=(clientX-r.left-camera.x)/camera.z,wy=(clientY-r.top-camera.y)/camera.z;
+  return {x:Math.floor(wx/S),y:Math.floor(wy/S)};
+}
+game.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='touch')return;
+  pointer.down=true;pointer.moved=false;pointer.x=e.clientX;pointer.y=e.clientY;
+  game.setPointerCapture?.(e.pointerId);
+});
+game.addEventListener('pointermove',e=>{
+  if(!pointer.down)return;
+  const dx=e.clientX-pointer.x,dy=e.clientY-pointer.y;
+  if(Math.abs(dx)+Math.abs(dy)>5)pointer.moved=true;
+  camera.x+=dx;camera.y+=dy;pointer.x=e.clientX;pointer.y=e.clientY;applyCamera();
+});
+game.addEventListener('pointerup',e=>{
+  if(!pointer.down)return;pointer.down=false;
+  if(!pointer.moved)handleTap(e.clientX,e.clientY);
+});
+game.addEventListener('touchstart',e=>{
+  for(const t of e.changedTouches)touches.set(t.identifier,t);
+  if(touches.size===2){
+    const a=[...touches.values()][0],b=[...touches.values()][1];
+    pinchDist=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);pinchZoom=camera.z;
+  }
+},{passive:false});
+game.addEventListener('touchmove',e=>{
+  if(touches.size===2){
+    e.preventDefault();
+    for(const t of e.changedTouches)touches.set(t.identifier,t);
+    const a=[...touches.values()][0],b=[...touches.values()][1];
+    const d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+    camera.z=clamp(pinchZoom*d/pinchDist,.5,1.8);applyCamera();
+  }else if(touches.size===1){
+    const t=[...touches.values()][0],old=t;
+    const dx=t.clientX-(pointer.x||t.clientX),dy=t.clientY-(pointer.y||t.clientY);
+    if(Math.abs(dx)+Math.abs(dy)>3)pointer.moved=true;
+    camera.x+=dx;camera.y+=dy;pointer.x=t.clientX;pointer.y=t.clientY;applyCamera();
+    for(const tt of e.changedTouches)touches.set(tt.identifier,tt);
+  }
+},{passive:false});
+game.addEventListener('touchend',e=>{
+  for(const t of e.changedTouches)touches.delete(t.identifier);
+  if(touches.size===0){
+    if(!pointer.moved&&e.changedTouches[0])handleTap(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
+    pointer.moved=false;
+  }
+});
+function handleTap(cx,cy){
+  if(paused||gameWon)return;
+  const p=screenToTile(cx,cy);if(!inside(p.x,p.y))return;
+  selected=p;renderMap();
+  if(buildMode){placeBuilding(buildMode,p.x,p.y);return}
+  const b=buildingAt(p.x,p.y);
+  if(b&&b.type==='barracks'){spawnSoldier();toastMsg('Ein Soldat wurde rekrutiert.');return}
+  const t=state.grid[key(p.x,p.y)];
+  if(state.revealed[key(p.x,p.y)]){
+    if(t===TYPES.dragonCave){attackDragon();return}
+    if(t===TYPES.cave||t===TYPES.portal||t===TYPES.crypt){sendSoldiersTo(p.x,p.y);return}
+    const enemy=state.enemies.find(e=>Math.round(e.x)===p.x&&Math.round(e.y)===p.y);
+    if(enemy){sendSoldiersTo(p.x,p.y);return}
+  }else reveal(p.x,p.y);
+}
+
+/* ---------- CAMERA ---------- */
+function applyCamera(){world.style.transform=`translate(${camera.x}px,${camera.y}px) scale(${camera.z})`}
+function centerCamera(){
+  camera.z=.85;camera.x=innerWidth/2-(state.cx*S+20)*camera.z;camera.y=innerHeight/2-(state.cy*S+20)*camera.z;applyCamera();
+}
+window.addEventListener('resize',centerCamera);
+
+/* ---------- UI ---------- */
+function updateUI(){
+  document.getElementById('gold').textContent=Math.floor(state.gold);
+  document.getElementById('wood').textContent=Math.floor(state.wood);
+  document.getElementById('stone').textContent=Math.floor(state.stone);
+  document.getElementById('food').textContent=Math.floor(state.food);
+  document.getElementById('workers').textContent=state.workers+'/'+state.workerCap;
+  document.getElementById('soldiers').textContent=state.soldiers+'/'+state.soldierCap;
+  document.getElementById('timer').textContent=formatTime(state.elapsed);
+  document.getElementById('modeName').textContent=state.mode==='dragon'?'DRAGON HUNT':state.mode==='reclaim'?'RECLAMATION':'SIEGE';
+}
+function win(title,text){gameWon=true;document.getElementById('winTitle').textContent=title;document.getElementById('winText').textContent=text;document.getElementById('winOverlay').style.display='flex';saveGame()}
+function setPause(v){paused=v;document.getElementById('pauseOverlay').style.display=v?'flex':'none';document.getElementById('pauseBtn').textContent=v?'▶':'Ⅱ'}
+function startMode(mode){
+  state=generateWorld(mode);state.dragonHp=500;paused=false;gameWon=false;
+  document.getElementById('start').style.display='none';document.getElementById('winOverlay').style.display='none';
+  spawnWorkers();renderMap();renderBuildings();renderUnits();updateUI();centerCamera();saveGame();
+  if(mode==='reclaim')goal.textContent='Ziel: Erkunde mindestens 35% der Karte und baue ein starkes Königreich.';
+  if(mode==='siege'){goal.textContent='Ziel: Überlebe 10 Belagerungswellen.';setTimeout(startSiegeWave,2500)}
+}
+document.querySelectorAll('.modeBtn[data-mode]').forEach(b=>b.onclick=()=>startMode(b.dataset.mode));
+document.getElementById('buildBtn').onclick=buildMenu;
+document.getElementById('researchBtn').onclick=researchMenu;
+document.getElementById('treasureBtn').onclick=treasureMenu;
+document.getElementById('helpBtn').onclick=helpMenu;
+document.getElementById('saveBtn').onclick=saveGame;
+document.getElementById('closePanel').onclick=closePanel;
+document.getElementById('pauseBtn').onclick=()=>setPause(!paused);
+document.getElementById('resumeBtn').onclick=()=>setPause(false);
+document.getElementById('restartBtn').onclick=()=>{localStorage.removeItem('kingdom_sweeper_full');document.getElementById('pauseOverlay').style.display='none';document.getElementById('start').style.display='flex'};
+document.getElementById('newGameBtn').onclick=()=>{document.getElementById('winOverlay').style.display='none';document.getElementById('start').style.display='flex'};
+
+/* ---------- MAIN LOOP ---------- */
+function tick(now){
+  const dt=Math.min(.05,(now-lastTime)/1000);lastTime=now;
+  if(state&&!paused&&!gameWon){
+    state.elapsed+=dt;productionTimer+=dt;enemyTimer+=dt;
+    updateWorkers(dt);updateConstruction(dt);combat(dt);
+    if(productionTimer>=5){productionTimer=0;production();state.day++;saveGame()}
+    if(state.mode==='siege'&&enemyTimer>=18){enemyTimer=0;if(state.enemies.length<25)startSiegeWave()}
+    if(state.mode==='reclaim'&&state.explored>W*H*.35&&state.buildings.filter(b=>b.done).length>=12){
+      state.seals+=2;win('Königreich etabliert','Du hast mehr als 35% der Wildnis erkundet und ein großes Königreich errichtet.')
+    }
+    if(state.mode==='siege'&&state.siegeWave>=10&&state.enemies.length===0){
+      state.seals+=2;state.siegeBest=Math.max(state.siegeBest,state.siegeWave);win('Belagerung überlebt','Du hast 10 Wellen überstanden und erhältst 2 Königssiegel.')
+    }
+    if(state.fires.length){
+      state.fires.forEach(f=>f.time-=dt);state.fires=state.fires.filter(f=>f.time>0);
+    }
+    renderUnits();renderBuildings();updateUI();
+  }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
 </script>
 </body>
 </html>
