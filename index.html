@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Kingdom Explorer</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#17231b;font-family:system-ui,-apple-system,sans-serif}
+#top{position:fixed;z-index:10;left:8px;right:8px;top:8px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+.pill,.btn{background:rgba(20,30,24,.92);color:#fff;border:1px solid #526657;border-radius:10px;padding:7px 9px;font-size:13px;box-shadow:0 2px 8px #0008}
+.btn{pointer-events:auto;cursor:pointer}
+#game{position:absolute;inset:0;overflow:hidden;background:#6fa85c;touch-action:none}
+#world{position:absolute;left:0;top:0;transform-origin:0 0}
+.tile{position:absolute;width:32px;height:32px;border:1px solid rgba(0,0,0,.08);user-select:none}
+.grass{background:#72a95d}
+.grass2{background:#7db467}
+.forest{background:#477b49}
+.hill{background:#8f8661}
+.water{background:#4d91b7}
+.unknown{background:#25312a}
+.road{background:#a98a5c}
+.tile:after{position:absolute;left:8px;top:5px;font-size:18px}
+.forest:after{content:"ð²"}
+.hill:after{content:"â°ï¸"}
+.water:after{content:"â"}
+.unknown:after{content:"?"}
+.road:after{content:""}
+#units,#buildings{position:absolute;left:0;top:0}
+.unit{position:absolute;font-size:20px;transform:translate(-50%,-65%);filter:drop-shadow(0 1px 1px #000)}
+.building{position:absolute;transform:translate(-50%,-80%);font-size:30px;filter:drop-shadow(0 2px 1px #000)}
+#bottom{position:fixed;z-index:20;left:8px;right:8px;bottom:8px;display:flex;gap:6px;overflow-x:auto}
+#bottom .btn{white-space:nowrap}
+#hint{position:fixed;z-index:30;left:50%;bottom:62px;transform:translateX(-50%);background:#152018dd;color:white;padding:7px 10px;border-radius:9px;font-size:12px;opacity:0;transition:.25s}
+#hint.show{opacity:1}
+</style>
+</head>
+<body>
+<div id="top">
+  <div class="pill">ðªµ <b id="wood">80</b></div>
+  <div class="pill">ðª¨ <b id="stone">50</b></div>
+  <div class="pill">ðª <b id="gold">20</b></div>
+  <div class="pill">ð¾ <b id="food">60</b></div>
+  <div class="pill">ð· <b id="workers">4</b></div>
+  <div class="pill">ð° Tag <b id="day">1</b></div>
+</div>
+
+<div id="game">
+  <div id="world">
+    <div id="tiles"></div>
+    <div id="buildings"></div>
+    <div id="units"></div>
+  </div>
+</div>
+
+<div id="hint"></div>
+
+<div id="bottom">
+  <button class="btn" data-build="house">ð  Haus 20ðªµ</button>
+  <button class="btn" data-build="farm">ð¾ Farm 25ðªµ</button>
+  <button class="btn" data-build="sawmill">ðªµ SÃ¤gewerk 30ðªµ</button>
+  <button class="btn" data-build="quarry">âï¸ Steinbruch 30ðªµ</button>
+  <button class="btn" data-build="storage">ð¦ Lager 40ðªµ</button>
+  <button class="btn" id="new">Neue Welt</button>
+</div>
+
+<script>
+const W=70,H=70,S=32;
+const tiles=document.getElementById("tiles");
+const buildings=document.getElementById("buildings");
+const units=document.getElementById("units");
+const world=document.getElementById("world");
+const game=document.getElementById("game");
+
+let res={wood:80,stone:50,gold:20,food:60,workers:4};
+let day=1;
+let cam={x:0,y:0,z:1};
+let grid=[], explored=[];
+let placed=[];
+let castle={x:35,y:35};
+let dragging=false,lastX=0,lastY=0,pinchStart=0,pinchZoom=1;
+
+function rnd(){return Math.random()}
+function makeWorld(){
+  grid=[]; explored=[];
+  for(let y=0;y<H;y++){
+    grid[y]=[]; explored[y]=[];
+    for(let x=0;x<W;x++){
+      let r=rnd(), t="grass";
+      if(r<.10)t="water";
+      else if(r<.24)t="forest";
+      else if(r<.31)t="hill";
+      else if(r<.40)t="grass2";
+      grid[y][x]=t;
+      explored[y][x]=false;
+    }
+  }
+  for(let y=32;y<=38;y++)for(let x=32;x<=38;x++){grid[y][x]="grass2";explored[y][x]=true}
+  for(let y=29;y<=41;y++)for(let x=29;x<=41;x++)explored[y][x]=true;
+  render();
+  placeCastle();
+  spawnWorkers();
+  center();
+}
+function render(){
+  tiles.innerHTML="";
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    let d=document.createElement("div");
+    d.className="tile "+(explored[y][x]?grid[y][x]:"unknown");
+    d.style.left=(x*S)+"px"; d.style.top=(y*S)+"px";
+    d.dataset.x=x;d.dataset.y=y;
+    tiles.appendChild(d);
+  }
+}
+function placeCastle(){
+  buildings.innerHTML="";
+  let b=document.createElement("div");
+  b.className="building";b.textContent="ð°";
+  b.style.left=(castle.x*S+16)+"px";b.style.top=(castle.y*S+18)+"px";
+  buildings.appendChild(b);
+}
+function spawnWorkers(){
+  units.innerHTML="";
+  for(let i=0;i<res.workers;i++){
+    let u=document.createElement("div");
+    u.className="unit";u.textContent="ð·";
+    u.style.left=((castle.x+Math.random()*3-1)*S+16)+"px";
+    u.style.top=((castle.y+Math.random()*3-1)*S+20)+"px";
+    units.appendChild(u);
+    wander(u);
+  }
+}
+function wander(u){
+  let x=castle.x*S+16+(Math.random()*120-60);
+  let y=castle.y*S+20+(Math.random()*120-60);
+  u.animate([{left:u.style.left,top:u.style.top},{left:x+"px",top:y+"px"}],
+    {duration:2500+Math.random()*2500,iterations:1,easing:"ease-in-out"})
+    .finished.then(()=>wander(u));
+}
+function update(){
+  document.getElementById("wood").textContent=Math.floor(res.wood);
+  document.getElementById("stone").textContent=Math.floor(res.stone);
+  document.getElementById("gold").textContent=Math.floor(res.gold);
+  document.getElementById("food").textContent=Math.floor(res.food);
+  document.getElementById("workers").textContent=res.workers;
+  document.getElementById("day").textContent=day;
+}
+function hint(t){
+  const h=document.getElementById("hint");h.textContent=t;h.classList.add("show");
+  clearTimeout(h._t);h._t=setTimeout(()=>h.classList.remove("show"),1500);
+}
+function can(cost){
+  for(const k in cost)if(res[k]<cost[k])return false;
+  return true;
+}
+function spend(cost){for(const k in cost)res[k]-=cost[k]}
+const costs={
+ house:{wood:20},farm:{wood:25},sawmill:{wood:30},quarry:{wood:30},storage:{wood:40}
+};
+const icons={house:"ð ",farm:"ð¾",sawmill:"ðªµ",quarry:"âï¸",storage:"ð¦"};
+
+document.querySelectorAll("[data-build]").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const type=btn.dataset.build,cost=costs[type];
+    if(!can(cost)){hint("Nicht genug Ressourcen");return}
+    spend(cost);
+    let x=castle.x+Math.floor(Math.random()*9-4),y=castle.y+Math.floor(Math.random()*9-4);
+    x=Math.max(2,Math.min(W-3,x));y=Math.max(2,Math.min(H-3,y));
+    placed.push({type,x,y});
+    let b=document.createElement("div");
+    b.className="building";b.textContent=icons[type];
+    b.style.left=(x*S+16)+"px";b.style.top=(y*S+20)+"px";
+    buildings.appendChild(b);
+    if(type==="house"){res.workers++;spawnWorkers()}
+    update();save();
+  });
+});
+
+function exploreAt(x,y){
+  let radius=5;
+  for(let yy=y-radius;yy<=y+radius;yy++)for(let xx=x-radius;xx<=x+radius;xx++){
+    if(xx>=0&&yy>=0&&xx<W&&yy<H&&Math.hypot(xx-x,yy-y)<=radius+1)explored[yy][xx]=true;
+  }
+  render();placeCastle();
+  for(const p of placed){
+    let b=document.createElement("div");
+    b.className="building";b.textContent=icons[p.type];
+    b.style.left=(p.x*S+16)+"px";b.style.top=(p.y*S+20)+"px";buildings.appendChild(b);
+  }
+  if(Math.random()<.10){res.gold+=5;hint("Du hast eine kleine Schatzkiste gefunden! +5 Gold")}
+  else hint("Gebiet erkundet");
+  update();save();
+}
+game.addEventListener("click",e=>{
+  if(dragging)return;
+  let r=game.getBoundingClientRect();
+  let wx=(e.clientX-r.left-cam.x)/cam.z;
+  let wy=(e.clientY-r.top-cam.y)/cam.z;
+  let x=Math.floor(wx/S),y=Math.floor(wy/S);
+  if(x>=0&&y>=0&&x<W&&y<H&&!explored[y][x])exploreAt(x,y);
+});
+
+function apply(){
+  world.style.transform=`translate(${cam.x}px,${cam.y}px) scale(${cam.z})`;
+}
+function center(){
+  cam.z=1;
+  cam.x=innerWidth/2-(castle.x*S+16);
+  cam.y=innerHeight/2-(castle.y*S+16);
+  apply();
+}
+game.addEventListener("pointerdown",e=>{
+  dragging=true;lastX=e.clientX;lastY=e.clientY;
+  game.setPointerCapture(e.pointerId);
+});
+game.addEventListener("pointermove",e=>{
+  if(!dragging)return;
+  cam.x+=e.clientX-lastX;cam.y+=e.clientY-lastY;
+  lastX=e.clientX;lastY=e.clientY;apply();
+});
+game.addEventListener("pointerup",()=>dragging=false);
+game.addEventListener("wheel",e=>{
+  e.preventDefault();
+  cam.z=Math.max(.55,Math.min(2.2,cam.z*(e.deltaY<0?1.1:.9)));apply();
+},{passive:false});
+
+let touches=new Map();
+game.addEventListener("touchstart",e=>{
+  for(const t of e.changedTouches)touches.set(t.identifier,t);
+  if(touches.size===2){
+    const a=[...touches.values()][0],b=[...touches.values()][1];
+    pinchStart=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);pinchZoom=cam.z;
+  }
+},{passive:false});
+game.addEventListener("touchmove",e=>{
+  if(touches.size!==2)return;
+  e.preventDefault();
+  for(const t of e.changedTouches)touches.set(t.identifier,t);
+  const a=[...touches.values()][0],b=[...touches.values()][1];
+  const d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+  cam.z=Math.max(.55,Math.min(2.2,pinchZoom*d/pinchStart));apply();
+},{passive:false});
+game.addEventListener("touchend",e=>{for(const t of e.changedTouches)touches.delete(t.identifier)});
+
+setInterval(()=>{
+  day++;
+  res.wood+=placed.filter(x=>x.type==="sawmill").length*2;
+  res.stone+=placed.filter(x=>x.type==="quarry").length*2;
+  res.food+=placed.filter(x=>x.type==="farm").length*3;
+  if(placed.filter(x=>x.type==="house").length>0)res.food-=placed.filter(x=>x.type==="house").length;
+  update();save();
+},5000);
+
+function save(){
+  localStorage.setItem("kingdomSave",JSON.stringify({res,day,grid,explored,placed}));
+}
+function load(){
+  try{
+    const s=JSON.parse(localStorage.getItem("kingdomSave"));
+    if(!s)return false;
+    res=s.res;day=s.day;grid=s.grid;explored=s.explored;placed=s.placed||[];
+    render();placeCastle();spawnWorkers();center();update();return true;
+  }catch(e){return false}
+}
+document.getElementById("new").onclick=()=>{
+  localStorage.removeItem("kingdomSave");
+  res={wood:80,stone:50,gold:20,food:60,workers:4};day=1;placed=[];
+  makeWorld();update();
+};
+if(!load())makeWorld();
+update();
+</script>
+</body>
+</html>
